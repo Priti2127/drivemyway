@@ -1,0 +1,40 @@
+{
+  "name": "drivemyway",
+  "version": "0.1.0",
+  "description": "Book a verified driver for your own car — on demand",
+  "private": true,
+  "workspaces": [
+    "backend/services/*",
+    "backend/shared",
+    "backend/gateway",
+    "apps/customer",
+    "apps/driver",
+    "apps/family-tracker"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "dev:backend": "concurrently -n auth,booking,tracking,payment,notif,kyc npm:dev:auth npm:dev:booking npm:dev:tracking npm:dev:payment npm:dev:notification npm:dev:kyc",
+    "dev:auth": "npm run dev --workspace=backend/services/auth",
+    "dev:booking": "npm run dev --workspace=backend/services/booking",
+    "dev:tracking": "npm run dev --workspace=backend/services/tracking",
+    "dev:payment": "npm run dev --workspace=backend/services/payment",
+    "dev:notification": "npm run dev --workspace=backend/services/notification",
+    "dev:kyc": "npm run dev --workspace=backend/services/driver-verification",
+    "dev:family-tracker": "npm run dev --workspace=apps/family-tracker",
+    "db:migrate": "node scripts/db/migrate.js",
+    "db:seed": "node scripts/db/seed.js",
+    "db:rollback": "node scripts/db/rollback.js",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "build:backend": "npm run build --workspaces --if-present",
+    "build:family-tracker": "npm run build --workspace=apps/family-tracker"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}
