@@ -1,0 +1,104 @@
+name: CI — Build & Lint
+
+on:
+  push:
+    branches: [master, main, develop]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  # ─── Lint & Type-check all backend services ─────────────────────────────────
+  backend:
+    name: Backend — Type Check
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: drivemyway_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build shared package
+        run: npm run build --workspace=backend/shared
+
+      - name: Type-check auth service
+        run: npx tsc --noEmit
+        working-directory: backend/services/auth
+
+      - name: Type-check booking service
+        run: npx tsc --noEmit
+        working-directory: backend/services/booking
+
+      - name: Type-check tracking service
+        run: npx tsc --noEmit
+        working-directory: backend/services/tracking
+
+      - name: Type-check payment service
+        run: npx tsc --noEmit
+        working-directory: backend/services/payment
+
+      - name: Run DB migrations (test DB)
+        run: node scripts/db/migrate.js
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/drivemyway_test
+          NODE_ENV: test
+
+  # ─── Family Tracker PWA ─────────────────────────────────────────────────────
+  family-tracker:
+    name: Family Tracker — Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --workspace=apps/family-tracker
+
+      - name: Type-check
+        run: npx tsc --noEmit
+        working-directory: apps/family-tracker
+
+      - name: Build production bundle
+        run: npm run build --workspace=apps/family-tracker
+        env:
+          VITE_TRACKING_SERVICE_URL: https://tracking.drivemyway.com
+          VITE_GOOGLE_MAPS_KEY: ${{ secrets.GOOGLE_MAPS_KEY }}
