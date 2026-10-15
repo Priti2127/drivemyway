@@ -1,0 +1,67 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  # ─── Deploy family-tracker PWA to Vercel ─────────────────────────────────────
+  deploy-family-tracker:
+    name: Deploy Family Tracker → Vercel
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/family-tracker
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_TRACKING_SERVICE_URL: ${{ secrets.TRACKING_SERVICE_URL }}
+          VITE_GOOGLE_MAPS_KEY: ${{ secrets.GOOGLE_MAPS_KEY }}
+
+      - name: Deploy to Vercel (Production)
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+        env:
+          VERCEL_ORG_ID:     ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  # ─── Trigger Railway redeploys via webhooks ──────────────────────────────────
+  deploy-backend:
+    name: Redeploy Backend → Railway
+    runs-on: ubuntu-latest
+    needs: []
+
+    steps:
+      - name: Trigger Railway Auth Service
+        run: |
+          curl -s -X POST "${{ secrets.RAILWAY_AUTH_WEBHOOK }}" || echo "webhook sent"
+
+      - name: Trigger Railway Booking Service
+        run: |
+          curl -s -X POST "${{ secrets.RAILWAY_BOOKING_WEBHOOK }}" || echo "webhook sent"
+
+      - name: Trigger Railway Tracking Service
+        run: |
+          curl -s -X POST "${{ secrets.RAILWAY_TRACKING_WEBHOOK }}" || echo "webhook sent"
+
+      - name: Trigger Railway Payment Service
+        run: |
+          curl -s -X POST "${{ secrets.RAILWAY_PAYMENT_WEBHOOK }}" || echo "webhook sent"
+
+      - name: Trigger Railway Notification Service
+        run: |
+          curl -s -X POST "${{ secrets.RAILWAY_NOTIFICATION_WEBHOOK }}" || echo "webhook sent"
