@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "DriveMyWay",
+    "slug": "drivemyway-customer",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "drivemyway",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1A6B5A"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.drivemyway.customer",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "DriveMyWay needs your location to show nearby drivers.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "DriveMyWay needs your location during trips."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#1A6B5A"
+      },
+      "package": "com.drivemyway.customer",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "VIBRATE"
+      ],
+      "googleServicesFile": "./google-services.json"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-location",
+        { "locationAlwaysAndWhenInUsePermission": "Allow DriveMyWay to use your location." }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "API_BASE_URL": "https://api.drivemyway.up.railway.app",
+      "TRACKING_WS_URL": "https://tracking.drivemyway.up.railway.app",
+      "FAMILY_TRACKER_BASE": "https://track.drivemyway.vercel.app",
+      "eas": {
+        "projectId": "your-eas-project-id"
+      }
+    }
+  }
+}
